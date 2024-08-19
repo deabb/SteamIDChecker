@@ -13,44 +13,48 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.Net.Http;
 using System.Xml.Linq;
+
 partial class SteamIDChecker
 {
-    static async Task Main()
+    static async Task Main(string[] args)
     {
-        bool checkThreeLetterCombinations = false;
+        bool checkThreeLetterCombinations = args.Length > 0 && args[0] == "-3";
+
         var combinations = ShitOutCombinations(checkThreeLetterCombinations);
-        var invalidIDs = new List<string>();
+
+        Console.WriteLine($"Checking {(checkThreeLetterCombinations ? "3 letter" : "2 letter")} Steam IDs...");
+        Console.WriteLine("Please wait...");
 
         using HttpClient client = new();
         foreach (var id in combinations)
         {
-            var url = $"https://steamcommunity.com/id/{id}/?xml=1";
-            var response = await client.GetStringAsync(url);
+            string url = $"https://steamcommunity.com/id/{id}/?xml=1";
+            string response = await client.GetStringAsync(url);
 
-            if (IsNotValid(response))
-            {
-                invalidIDs.Add(id);
-                Console.WriteLine(id);
-            }
+            string status = IsNotValid(response) ? "\u001b[32mFree\u001b[0m" : "\u001b[91mTaken\u001b[0m";
+            Console.WriteLine($"{id} - {status}");
         }
     }
 
     static IEnumerable<string> ShitOutCombinations(bool checkThreeLetterCombinations)
     {
-        string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         foreach (char first in chars)
         {
             foreach (char second in chars)
             {
-                yield return $"{first}{second}";
-
                 if (checkThreeLetterCombinations)
                 {
                     foreach (char third in chars)
                     {
                         yield return $"{first}{second}{third}";
                     }
+                }
+                else
+                {
+                    yield return $"{first}{second}";
                 }
             }
         }
@@ -59,11 +63,6 @@ partial class SteamIDChecker
     static bool IsNotValid(string response)
     {
         var xml = XDocument.Parse(response);
-        var errorElement = xml.Root!.Element("error");
-        if (errorElement != null && errorElement.Value.Contains("The specified profile could not be found"))
-        {
-            return true;
-        }
-        return false;
+        return xml.Root?.Element("error")?.Value.Contains("The specified profile could not be found") ?? false;
     }
 }
