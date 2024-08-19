@@ -2,7 +2,9 @@
 
 A simple program that returns a list of every un-registered 2 (or 3) steam profile url letter combination
 
-## Authors
+add the `-3` parameter to check for 3 letter combinations
+
+## Author
 
 [dea](https://twitter.com/dea_bb)
 
