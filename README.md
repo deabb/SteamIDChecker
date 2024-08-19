@@ -4,7 +4,7 @@ A simple program that returns a list of every un-registered 2 (or 3) steam profi
 
 ## Authors
 
-[dea](https://twitter.com/deafps_)
+[dea](https://twitter.com/dea_bb)
 
 ## License
 
